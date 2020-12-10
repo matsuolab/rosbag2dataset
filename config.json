@@ -1,26 +1,13 @@
 {
-    "topics": [
-        "usb_cam/image_raw/compressed",
-        "odom",
-        "imu/data",
-        "front_laser/scan"
-    ],
-    "dataset": [
-        "obs",
-        "acs",
-        "pos",
-        "lidar",
-        "imu",
-        "goal"
-    ],
+    "topics": {
+        "camera/color/image_raw": "obs_color"
+    },
     "hz": 10,
-    "traj_steps": 100,
-    "goal_steps": 500,
     "output_dir": "/root/dataset",
     "bagfile_dir": "/root/bagfiles",
-    "bagfile_name": "tsukuba_longest.bag",
-    "width": 256,
-    "height": 256,
+    "bagfile_name": "20201202_233202_181150.bag",
+    "width": 224,
+    "height": 224,
     "action_noise": 0.1,
     "lower_bound": [0.0, -1.5],
     "upper_bound": [1.5, 1.5]
