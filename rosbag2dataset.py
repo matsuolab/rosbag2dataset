@@ -57,12 +57,22 @@ if __name__ == '__main__':
         elif topic_type == "sensor_msgs/Imu":
             print("==== convert imu ====")
             dataset["imu"] = convert_Imu(sample_data[topic])
+        elif topic_type == "geometry_msgs/PoseStamped":
+            print("==== convert pose ====")
+            dataset["pose"] = convert_PoseStamped(sample_data[topic])
+        elif topic_type == "sensor_msgs/JointState":
+            print("==== convert joint state ====")
+            dataset["jointState"] = convert_JointStates(sample_data[topic])
+        elif topic_type == "trajectory_msgs/JointTrajectory":
+            print("==== convert joint trajectory ====")
+            dataset["jointTrajectory"] = convert_JointTrajectory(sample_data[topic])
 
     print("==== save data as torch tensor ====")
     if "goal" in config["dataset"]:
         num_steps = len(dataset["acs"]) - config["goal_steps"]
     else:
-        num_steps = len(dataset["acs"])
+        # num_steps = len(dataset["acs"])
+        num_steps = len(dataset["pose"])
     num_traj = int(num_steps/config["traj_steps"])
     for idx in tqdm(range(num_traj)):
         file_name = ("%d.pt" % (idx))

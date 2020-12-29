@@ -19,5 +19,18 @@ RUN pip3 install --upgrade pip && \
         opencv-python \
         tqdm
 
+RUN apt-get update && \
+    apt-get install -y \
+    wget \
+    curl \
+    git \
+    vim \
+    lsb-release \
+    gnupg
+
+RUN sed -i 's/#force_color_prompt=yes/force_color_prompt=yes/' /root/.bashrc
+
+RUN echo 'source /opt/ros/noetic/setup.bash' >> /root/.bashrc
+
 WORKDIR /root
 CMD ["/bin/bash"]

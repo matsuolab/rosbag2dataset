@@ -98,3 +98,67 @@ def get_pose_from_odom(odom):
 def add_random_noise(action, std, lb, ub):
     action += np.random.randn(*action.shape) * std
     return action.clip(lb, ub)
+
+def convert_PoseStamped(data):
+    pose_list = []
+    for msg in tqdm(data):
+        pose_list.append(np.array([
+            msg.pose.position.x,
+            msg.pose.position.y,
+            msg.pose.position.z,
+            msg.pose.orientation.x,
+            msg.pose.orientation.y,
+            msg.pose.orientation.z,
+            msg.pose.orientation.w,
+        ]))
+    return pose_list
+
+def convert_JointStates(data):
+    joint_states_list = []
+    for msg in tqdm(data):
+        joint_states_list.append(np.array([
+            msg.position[0],
+            msg.position[1],
+            msg.position[2],
+            msg.position[3],
+            msg.position[4],
+            msg.position[5],
+            msg.position[6],
+            msg.velocity[0],
+            msg.velocity[1],
+            msg.velocity[2],
+            msg.velocity[3],
+            msg.velocity[4],
+            msg.velocity[5],
+            msg.velocity[6],
+        ]))
+    return joint_states_list
+
+def convert_JointTrajectory(data):
+    joint_trajectory_list = []
+    for msg in tqdm(data):
+        points = msg.points[0]
+        joint_trajectory_list.append(np.array([
+            points.positions[0],
+            points.positions[1],
+            points.positions[2],
+            points.positions[3],
+            points.positions[4],
+            points.positions[5],
+            points.positions[6],
+            points.velocities[0],
+            points.velocities[1],
+            points.velocities[2],
+            points.velocities[3],
+            points.velocities[4],
+            points.velocities[5],
+            points.velocities[6],
+            points.accelerations[0],
+            points.accelerations[1],
+            points.accelerations[2],
+            points.accelerations[3],
+            points.accelerations[4],
+            points.accelerations[5],
+            points.accelerations[6],
+        ]))
+    return joint_trajectory_list
