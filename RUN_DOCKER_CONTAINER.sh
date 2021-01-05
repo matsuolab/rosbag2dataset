@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_NAME=ghcr.io/jumpei-arima/rosbag2dataset:latest
+IMAGE_NAME=rosbag2dataset:latest
 CONTAINER_NAME=rosbag2dataset
 
 if [ $# -eq 0 ]; then

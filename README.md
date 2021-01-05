@@ -3,6 +3,6 @@
 ## How to Use
 ```
 $ cd docker
-$ ./build.sh
-$ ./run_docker.sh
+$ ./BUILD_DOCKER_IMAGE.sh
+$ ./RUN_DOCKER_CONTAINER.sh
 ```

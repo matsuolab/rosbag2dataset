@@ -10,14 +10,14 @@ def convert_Image(data, height=None, width=None):
     bridge = CvBridge()
     for msg in tqdm(data):
         try:
-            img = bridge.imgmsg_to_cv2(msg,"bgr8")
+            img = bridge.imgmsg_to_cv2(msg, desired_encoding='rgb8')
+            if height is not None and width is not None:
+                h,w,c = img.shape
+                img = img[0:h, int((w-h)*0.5):w-int((w-h)*0.5), :]
+                img = cv2.resize(img, (height, width))
+            obs.append(img)
         except CvBridgeError as e:
             print(e)
-        if height is not None and width is not None:
-            h,w,c = img.shape
-            img = img[0:h, int((w-h)*0.5):w-int((w-h)*0.5), :]
-            img = cv2.resize(img, (height, width))
-        obs.append(img)
     return obs
 
 def convert_CompressedImage(data, height=None, width=None):

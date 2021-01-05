@@ -15,8 +15,10 @@ RUN apt-get update && \
 
 RUN pip3 install --upgrade pip && \
     pip3 install --no-cache-dir \
-        torch \
+        ipython \
         opencv-python \
+        torch \
+        torchvision \
         tqdm
 
 RUN apt-get update && \
