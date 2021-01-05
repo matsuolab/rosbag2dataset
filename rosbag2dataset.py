@@ -14,6 +14,7 @@ from utils import *
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, default="config.json")
+    parser.add_argument('--skip_if_exists', action='store_true')
     args = parser.parse_args()
 
     if os.path.exists(args.config):
@@ -46,6 +47,11 @@ if __name__ == '__main__':
         for topic in topics:
             data_name = config["topics"][topic]
             topic_type = rosbag_handler.get_topic_type(topic)
+            pt_name = data_name + ".pt"
+            path = os.path.join(out_dir, pt_name)
+            if os.path.exists(path) and args.skip_if_exists:
+                print("{} already exists. Skipping.".format(pt_name))
+                continue
             if topic_type == "sensor_msgs/CompressedImage":
                 print("==== convert compressed image ====")
                 data = convert_CompressedImage(sample_data[topic], config["height"], config["width"])
@@ -73,12 +79,9 @@ if __name__ == '__main__':
             else:
                 tensor = None
             if tensor is not None:
-                pt_name = data_name + ".pt"
-                path = os.path.join(out_dir, pt_name)
                 print("==== save {} as torch tensor {} ({})====".format(topic, pt_name, tensor.dtype))
                 with open(path, "wb") as f:
                     torch.save(tensor, f)
-        
         with open(os.path.join(out_dir, 'info.json'), 'w') as f:
             info = config
             json.dump(info, f)
