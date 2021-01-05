@@ -54,9 +54,13 @@ if __name__ == '__main__':
             data = convert_JointStates(sample_data[topic])
             tensor = torch.tensor(data, dtype=torch.float32)
         elif topic_type == "trajectory_msgs/JointTrajectory":
-            print("==== convert JointTrajectoryy ====")
+            print("==== convert JointTrajectory ====")
             data = convert_JointTrajectory(sample_data[topic])
             tensor = torch.tensor(data, dtype=torch.float32)
+        elif topic_type == "std_msgs/Float32":
+            print("==== convert Float32 ====")
+            data = [msg.data for msg in sample_data[topic]]
+            tensor = torch.tensor(data, dtype=torch.float32) 
         else:
             tensor = None
         if tensor is not None:
