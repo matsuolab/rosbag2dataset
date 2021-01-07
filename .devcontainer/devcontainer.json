@@ -15,7 +15,15 @@
 	},
 
 	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": []
+	"extensions": [
+		"github.vscode-pull-request-github",
+		"donjayamanne.githistory",
+		"vmsynkov.colonize",
+		"ms-python.vscode-pylance",
+		"ms-python.python",
+		"ms-iot.vscode-ros",
+		"eamodio.gitlens"
+	]
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

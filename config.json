@@ -1,7 +1,6 @@
 {
     "topics": {
-        "eye_to_hand_camera/color/image_raw": "camera_color",
-        "eye_on_hand_camera/color/image_raw": "handcamera_color",
+        "eye_on_hand_camera/color/image_raw/compressed": "handcamera_color",
         "controller/pose": "controller_pose",
         "controller/trigger": "controller_trigger", 
         "teleop/pose_goal": "pose_goal",
@@ -9,8 +8,8 @@
         "xarm/xarm7_traj_controller/command": "joint_trajectory"
     },
     "hz": 10,
-    "output_dir": "/root/dataset",
-    "bagfile_dir": "/root/bagfiles",
+    "output_dir": "./dataset",
+    "bagfile_dir": "./bagfiles",
     "bagfile_names": [],
     "width": 224,
     "height": 224,
