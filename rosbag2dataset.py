@@ -26,15 +26,18 @@ if __name__ == '__main__':
         bagfile_names = config["bagfile_names"]
     else:
         # convert all .bag file if bagfile_names is not specified
-        bagfile_names = [os.path.basename(r) for r in glob.glob(config["bagfile_dir"]+'/*.bag')]
+        bagfile_names = [
+            os.path.basename(r) for r in glob.glob(
+                config["bagfile_dir"] + '/*.bag')]
     print('Converting {} files'.format(len(bagfile_names)))
 
     # TODO: Refactor
     for bagfile_name in bagfile_names:
-        bagfile = os.path.join(config["bagfile_dir"], bagfile_name) 
+        bagfile = os.path.join(config["bagfile_dir"], bagfile_name)
         if not os.path.exists(bagfile):
             raise ValueError('set correct bagfiles')
-        file_name = os.path.splitext(os.path.basename(bagfile))[0]+"_"+str(config["hz"])+"hz"
+        file_name = os.path.splitext(os.path.basename(bagfile))[
+            0] + "_" + str(config["hz"]) + "hz"
         out_dir = os.path.join(config["output_dir"], file_name)
         print("out_dir: ", out_dir)
         os.makedirs(out_dir, exist_ok=True)
@@ -43,7 +46,8 @@ if __name__ == '__main__':
         t0 = rosbag_handler.start_time
         t1 = rosbag_handler.end_time
         topics = config["topics"].keys()
-        sample_data = rosbag_handler.read_messages(topics=topics, start_time=t0, end_time=t1, hz=config["hz"])
+        sample_data = rosbag_handler.read_messages(
+            topics=topics, start_time=t0, end_time=t1, hz=config["hz"])
         for topic in topics:
             data_name = config["topics"][topic]
             topic_type = rosbag_handler.get_topic_type(topic)
@@ -54,12 +58,20 @@ if __name__ == '__main__':
                 continue
             if topic_type == "sensor_msgs/CompressedImage":
                 print("==== convert compressed image ====")
-                data = convert_CompressedImage(sample_data[topic], config["height"], config["width"])
-                tensor = torch.tensor(data, dtype=torch.float32).permute(0, 3, 1, 2) 
+                data = convert_CompressedImage(
+                    sample_data[topic], config["height"], config["width"])
+                tensor = torch.tensor(
+                    data, dtype=torch.float32).permute(
+                    0, 3, 1, 2)
             elif topic_type == "sensor_msgs/Image":
                 print("==== convert image ====")
-                data = convert_Image(sample_data[topic], config["height"], config["width"])
-                tensor = torch.tensor(data, dtype=torch.uint8).permute(0, 3, 1, 2)
+                data = convert_Image(
+                    sample_data[topic],
+                    config["height"],
+                    config["width"])
+                tensor = torch.tensor(
+                    data, dtype=torch.uint8).permute(
+                    0, 3, 1, 2)
             elif topic_type == "geometry_msgs/PoseStamped":
                 print("==== convert PoseStamped ====")
                 data = convert_PoseStamped(sample_data[topic])
@@ -75,11 +87,13 @@ if __name__ == '__main__':
             elif topic_type == "std_msgs/Float32":
                 print("==== convert Float32 ====")
                 data = [msg.data for msg in sample_data[topic]]
-                tensor = torch.tensor(data, dtype=torch.float32) 
+                tensor = torch.tensor(data, dtype=torch.float32)
             else:
                 tensor = None
             if tensor is not None:
-                print("==== save {} as torch tensor {} ({})====".format(topic, pt_name, tensor.dtype))
+                print(
+                    "==== save {} as torch tensor {} ({})====".format(
+                        topic, pt_name, tensor.dtype))
                 with open(path, "wb") as f:
                     torch.save(tensor, f)
         with open(os.path.join(out_dir, 'info.json'), 'w') as f:
