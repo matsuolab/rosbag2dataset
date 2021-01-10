@@ -150,3 +150,21 @@ def convert_JointTrajectory(data):
         joint_trajectory = np.concatenate([position, velocity, acceleration])
         joint_trajectory_list.append(joint_trajectory)
     return joint_trajectory_list
+
+def convert_tf(data):
+    tf_list = []
+    for msg in tqdm(data):
+        for tf in msg.transforms:
+            if tf.child_frame_id != 'link7': continue
+            translation = tf.transform.translation
+            rotation = tf.transform.rotation
+            tf_list.append(np.array([
+                translation.x,
+                translation.y,
+                translation.z,
+                rotation.x,
+                rotation.y,
+                rotation.z,
+                rotation.w,
+            ]))
+    return tf_list

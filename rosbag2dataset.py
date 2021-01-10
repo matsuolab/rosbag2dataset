@@ -88,6 +88,10 @@ if __name__ == '__main__':
                 print("==== convert Float32 ====")
                 data = [msg.data for msg in sample_data[topic]]
                 tensor = torch.tensor(data, dtype=torch.float32)
+            elif topic_type == "tf2_msgs/TFMessage":
+                print("==== convert tf ====")
+                data = convert_tf(sample_data[topic])
+                tensor = torch.tensor(data, dtype=torch.float32)
             else:
                 tensor = None
             if tensor is not None:

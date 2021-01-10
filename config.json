@@ -5,7 +5,8 @@
         "controller/trigger": "controller_trigger", 
         "teleop/pose_goal": "pose_goal",
         "xarm/joint_states": "joint_state",
-        "xarm/xarm7_traj_controller/command": "joint_trajectory"
+        "xarm/xarm7_traj_controller/command": "joint_trajectory",
+        "tf": "link7"
     },
     "hz": 10,
     "output_dir": "./dataset",
