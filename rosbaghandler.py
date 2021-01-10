@@ -33,6 +33,9 @@ class RosbagHandler:
         print("start time: " + str(self.start_time))
         print("end time:   " + str(self.end_time))
 
+    def print_warning(self, str):
+        print('\033[33m[WARNING] ' + str + '\033[0m')
+
     def read_messages(self, topics=None, start_time=None,
                       end_time=None, hz=None):
         if start_time is None:
@@ -46,7 +49,7 @@ class RosbagHandler:
 
         for topic in topics:
             if '/{}'.format(topic) not in self.info.topics.keys():
-                print('[WORNING] data not found /{} '.format(topic))
+                self.print_warning('data not found: /{} '.format(topic))
             else:
                 data[topic] = []
                 topic_names.append("/" + topic)
