@@ -168,3 +168,18 @@ def convert_tf(data):
                 rotation.w,
             ]))
     return tf_list
+
+def convert_GripperFeedback(data):
+    gripper_feedback_list = []
+    for msg in tqdm(data):
+        gripper_feedback_list.append(msg.feedback.current_pulse)
+    return gripper_feedback_list 
+
+def convert_GripperGoal(data):
+    gripper_feedback_list = []
+    for msg in tqdm(data):
+        gripper_feedback_list.append(np.array([
+            msg.goal.target_pulse,
+            msg.goal.pulse_speed
+        ]))
+    return gripper_feedback_list 

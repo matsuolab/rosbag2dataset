@@ -6,7 +6,9 @@
         "teleop/pose_goal": "pose_goal",
         "xarm/joint_states": "joint_state",
         "xarm/xarm7_traj_controller/command": "joint_trajectory",
-        "tf": "link7"
+        "tf": "link7",
+        "xarm/gripper_move/feedback": "gripper_feedback",
+        "xarm/gripper_move/goal": "gripper_goal"
     },
     "hz": 10,
     "output_dir": "./dataset",

@@ -92,6 +92,14 @@ if __name__ == '__main__':
                 print("==== convert tf ====")
                 data = convert_tf(sample_data[topic])
                 tensor = torch.tensor(data, dtype=torch.float32)
+            elif topic_type == "xarm_gripper/MoveActionFeedback":
+                print("==== convert Gripper Feedback ====")
+                data = convert_GripperFeedback(sample_data[topic])
+                tensor = torch.tensor(data, dtype=torch.float32)
+            elif topic_type == "xarm_gripper/MoveActionGoal":
+                print("==== convert Gripper Goal ====")
+                data = convert_GripperGoal(sample_data[topic])
+                tensor = torch.tensor(data, dtype=torch.float32)
             else:
                 tensor = None
             if tensor is not None:
