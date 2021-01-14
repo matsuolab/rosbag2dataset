@@ -118,14 +118,16 @@ def add_random_noise(action, std, lb, ub):
 def convert_PoseStamped(data):
     pose_list = []
     for msg in tqdm(data):
+        quaternion = msg.pose.orientation
+        euler = quaternion_to_euler(quaternion)
+
         pose_list.append(np.array([
             msg.pose.position.x,
             msg.pose.position.y,
             msg.pose.position.z,
-            msg.pose.orientation.x,
-            msg.pose.orientation.y,
-            msg.pose.orientation.z,
-            msg.pose.orientation.w,
+            euler.x,
+            euler.y,
+            euler.z,
         ]))
     return pose_list
 
@@ -177,10 +179,10 @@ def convert_GripperFeedback(data):
     return gripper_feedback_list
 
 def convert_GripperGoal(data):
-    gripper_feedback_list = []
+    gripper_goal_list = []
     for msg in tqdm(data):
-        gripper_feedback_list.append(np.array([
+        gripper_goal_list.append(np.array([
             msg.goal.target_pulse,
             msg.goal.pulse_speed
         ]))
-    return gripper_feedback_list
+    return gripper_goal_list
