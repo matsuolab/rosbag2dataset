@@ -157,15 +157,16 @@ def convert_tf(data):
         for tf in msg.transforms:
             if tf.child_frame_id != 'link7': continue
             translation = tf.transform.translation
-            rotation = tf.transform.rotation
+            quaternion = tf.transform.rotation
+            euler = quaternion_to_euler(quaternion)
+
             tf_list.append(np.array([
                 translation.x,
                 translation.y,
                 translation.z,
-                rotation.x,
-                rotation.y,
-                rotation.z,
-                rotation.w,
+                euler.x,
+                euler.y,
+                euler.z,
             ]))
     return tf_list
 
@@ -173,7 +174,7 @@ def convert_GripperFeedback(data):
     gripper_feedback_list = []
     for msg in tqdm(data):
         gripper_feedback_list.append(msg.feedback.current_pulse)
-    return gripper_feedback_list 
+    return gripper_feedback_list
 
 def convert_GripperGoal(data):
     gripper_feedback_list = []
@@ -182,4 +183,4 @@ def convert_GripperGoal(data):
             msg.goal.target_pulse,
             msg.goal.pulse_speed
         ]))
-    return gripper_feedback_list 
+    return gripper_feedback_list

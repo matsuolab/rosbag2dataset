@@ -1,12 +1,13 @@
 {
     "topics": {
-        "eye_on_hand_camera/color/image_raw/compressed": "handcamera_color",
+        "eye_to_hand_camera/color/image_raw": "camera_color",
+        "eye_on_hand_camera/color/image_raw": "handcamera_color",
         "controller/pose": "controller_pose",
-        "controller/trigger": "controller_trigger", 
+        "controller/trigger": "controller_trigger",
         "teleop/pose_goal": "pose_goal",
         "xarm/joint_states": "joint_state",
         "xarm/xarm7_traj_controller/command": "joint_trajectory",
-        "tf": "link7",
+        "tf": "end_effector_pose",
         "xarm/gripper_move/feedback": "gripper_feedback",
         "xarm/gripper_move/goal": "gripper_goal"
     },
@@ -19,4 +20,4 @@
     "action_noise": 0.1,
     "lower_bound": [0.0, -1.5],
     "upper_bound": [1.5, 1.5]
-} 
+}
