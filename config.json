@@ -12,8 +12,8 @@
         "xarm/gripper_move/goal": "gripper_goal"
     },
     "hz": 10,
-    "output_dir": "./dataset",
-    "bagfile_dir": "./bagfiles",
+    "output_dir": "/root/dataset",
+    "bagfile_dir": "/root/bagfiles",
     "bagfile_names": [],
     "width": 224,
     "height": 224,
