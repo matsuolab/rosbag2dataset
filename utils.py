@@ -158,9 +158,9 @@ def convert_JointTrajectory(data):
 def convert_tf(data):
     tf_list = []
     for msg in tqdm(data):
+        pos = np.array([0.0, 0.0, 0.0])
+        rot = Rotation.from_euler('xyz', [0.0, 0.0, 0.0])
         for tf in msg.transforms:
-            pos = np.array([0.0, 0.0, 0.0])
-            rot = Rotation.from_euler('xyz', [0.0, 0.0, 0.0])
             for i in range(7):
                 if tf.child_frame_id == 'link{}'.format(i):
                     trans = tf.transform.translation
@@ -168,8 +168,8 @@ def convert_tf(data):
                     pos += np.array([trans.x, trans.y, trans.z])
                     rot *= Rotation.from_quat([quat.x, quat.y, quat.z, quat.w])
 
-            euler = rot.as_euler('xyz')
-            tf_list.append(np.concatenate([pos, euler]))
+        euler = rot.as_euler('xyz')
+        tf_list.append(np.concatenate([pos, euler]))
     return tf_list
 
 def convert_GripperFeedback(data):
