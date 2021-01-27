@@ -19,7 +19,8 @@ RUN pip3 install --upgrade pip && \
         opencv-python \
         torch \
         torchvision \
-        tqdm
+        tqdm \
+        scipy
 
 RUN apt-get update && \
     apt-get install -y \

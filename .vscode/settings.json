@@ -5,5 +5,5 @@
     "python.analysis.extraPaths": [
         "/opt/ros/melodic/lib/python2.7/dist-packages"
     ],
-    "python.pythonPath": "/home/txcolab/.pyenv/versions/3.8.5/bin/python"
+    "python.pythonPath": "/home/txcolab/.pyenv/versions/torch/bin/python"
 }

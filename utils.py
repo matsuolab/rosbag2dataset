@@ -5,6 +5,8 @@ from tqdm import tqdm
 from geometry_msgs.msg import Vector3
 import tf
 from cv_bridge import CvBridge, CvBridgeError
+from tf.transformations import *
+from scipy.spatial.transform import Rotation
 
 
 def convert_Image(data, height=None, width=None):
@@ -157,19 +159,17 @@ def convert_tf(data):
     tf_list = []
     for msg in tqdm(data):
         for tf in msg.transforms:
-            if tf.child_frame_id != 'link7': continue
-            translation = tf.transform.translation
-            quaternion = tf.transform.rotation
-            euler = quaternion_to_euler(quaternion)
+            pos = np.array([0.0, 0.0, 0.0])
+            rot = Rotation.from_euler('xyz', [0.0, 0.0, 0.0])
+            for i in range(7):
+                if tf.child_frame_id == 'link{}'.format(i):
+                    trans = tf.transform.translation
+                    quat = tf.transform.rotation
+                    pos += np.array([trans.x, trans.y, trans.z])
+                    rot *= Rotation.from_quat([quat.x, quat.y, quat.z, quat.w])
 
-            tf_list.append(np.array([
-                translation.x,
-                translation.y,
-                translation.z,
-                euler.x,
-                euler.y,
-                euler.z,
-            ]))
+            euler = rot.as_euler('xyz')
+            tf_list.append(np.concatenate([pos, euler]))
     return tf_list
 
 def convert_GripperFeedback(data):
