@@ -7,6 +7,10 @@ import tf
 from cv_bridge import CvBridge, CvBridgeError
 from tf.transformations import *
 from scipy.spatial.transform import Rotation
+import matplotlib.pyplot as plt
+from pytransform3d import rotations as pr
+from pytransform3d import transformations as pt
+from pytransform3d.transform_manager import TransformManager
 
 
 def convert_Image(data, height=None, width=None):
@@ -155,28 +159,41 @@ def convert_JointTrajectory(data):
         joint_trajectory_list.append(joint_trajectory)
     return joint_trajectory_list
 
+
 def convert_tf(data):
     tf_list = []
     for msg in tqdm(data):
-        pos = np.array([0.0, 0.0, 0.0])
-        rot = Rotation.from_euler('xyz', [0.0, 0.0, 0.0])
+        tm = TransformManager()
+        tf_link = pt.transform_from_pq([0, 0, 0, 0, 0, 0, 0])
+        tm.add_transform('link0', 'robot', tf_link)
+
         for tf in msg.transforms:
             for i in range(1, 8):
                 if tf.child_frame_id == 'link{}'.format(i):
                     trans = tf.transform.translation
                     quat = tf.transform.rotation
-                    pos += np.array([trans.x, trans.y, trans.z])
-                    rot *= Rotation.from_quat([quat.x, quat.y, quat.z, quat.w])
+                    tf_link = pt.transform_from_pq(
+                        [trans.x, trans.y, trans.z, quat.x, quat.y, quat.z, quat.w])
+                    tm.add_transform('link{}'.format(i),
+                                     'link{}'.format(i-1), tf_link)
 
-        euler = rot.as_euler('xyz')
-        tf_list.append(np.concatenate([pos, euler]))
+        end_effector_matrix = tm.get_transform('link7', 'link0')
+        pos = end_effector_matrix[:3, 3]
+        end_effector_rotation_matrix = end_effector_matrix[:3, :3]
+        rot = Rotation.from_matrix(
+            end_effector_rotation_matrix).as_euler('xyz')
+        end_effector_pose = np.concatenate([pos, rot])
+        tf_list.append(end_effector_pose)
+
     return tf_list
+
 
 def convert_GripperFeedback(data):
     gripper_feedback_list = []
     for msg in tqdm(data):
         gripper_feedback_list.append(msg.feedback.current_pulse)
     return gripper_feedback_list
+
 
 def convert_GripperGoal(data):
     gripper_goal_list = []
