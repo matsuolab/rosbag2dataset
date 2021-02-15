@@ -161,7 +161,7 @@ def convert_tf(data):
         pos = np.array([0.0, 0.0, 0.0])
         rot = Rotation.from_euler('xyz', [0.0, 0.0, 0.0])
         for tf in msg.transforms:
-            for i in range(7):
+            for i in range(1, 8):
                 if tf.child_frame_id == 'link{}'.format(i):
                     trans = tf.transform.translation
                     quat = tf.transform.rotation
