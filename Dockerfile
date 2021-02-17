@@ -21,7 +21,7 @@ RUN pip3 install --upgrade pip && \
         torchvision \
         tqdm \
         scipy \
-    pytransform3d
+        pytransform3d
 
 RUN apt-get update && \
     apt-get install -y \
