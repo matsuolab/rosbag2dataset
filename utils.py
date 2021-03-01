@@ -2,15 +2,16 @@ from os.path import join
 import numpy as np
 import cv2
 from tqdm import tqdm
+import geometry_msgs
 from geometry_msgs.msg import Vector3
 import tf
 from cv_bridge import CvBridge, CvBridgeError
 from tf.transformations import *
 from scipy.spatial.transform import Rotation
 import matplotlib.pyplot as plt
-from pytransform3d import rotations as pr
-from pytransform3d import transformations as pt
-from pytransform3d.transform_manager import TransformManager
+# from pytransform3d import rotations as pr
+# from pytransform3d import transformations as pt
+# from pytransform3d.transform_manager import TransformManager
 
 
 def convert_Image(data, height=None, width=None):
@@ -160,30 +161,47 @@ def convert_JointTrajectory(data):
     return joint_trajectory_list
 
 
+def transform2homogeneousM(tfobj):
+    # geometry_msg.msg.Transform to Homogeneous Matrix
+    tfeul = tf.transformations.euler_from_quaternion(
+        [tfobj.rotation.x, tfobj.rotation.y, tfobj.rotation.z, tfobj.rotation.w], axes='sxyz')
+    tftrans = [tfobj.translation.x, tfobj.translation.y, tfobj.translation.z]
+    tfobjM = tf.transformations.compose_matrix(angles=tfeul, translate=tftrans)
+    return tfobjM
+
+
 def convert_tf(data):
     tf_list = []
+    # tm = TransformManager()
     for msg in tqdm(data):
-        tm = TransformManager()
-        tf_link = pt.transform_from_pq([0, 0, 0, 0, 0, 0, 0])
-        tm.add_transform('link0', 'robot', tf_link)
+        # Initialize Homogeneous Matrix
+        tfobj = geometry_msgs.msg.Transform()
+        tf_target = transform2homogeneousM(tfobj)
 
-        for tf in msg.transforms:
-            for i in range(1, 8):
-                if tf.child_frame_id == 'link{}'.format(i):
-                    trans = tf.transform.translation
-                    quat = tf.transform.rotation
-                    tf_link = pt.transform_from_pq(
-                        [trans.x, trans.y, trans.z, quat.x, quat.y, quat.z, quat.w])
-                    tm.add_transform('link{}'.format(i),
-                                     'link{}'.format(i-1), tf_link)
+        # define frame start & end
+        frame_start = "link_base"
+        frame_end = "link7"
 
-        end_effector_matrix = tm.get_transform('link7', 'link0')
-        pos = end_effector_matrix[:3, 3]
-        end_effector_rotation_matrix = end_effector_matrix[:3, :3]
-        rot = Rotation.from_matrix(
-            end_effector_rotation_matrix).as_euler('xyz')
+        for tfobj in msg.transforms:
+            if tfobj.header.frame_id == frame_start:
+                tfobjM = transform2homogeneousM(tfobj.transform)
+                tf_target = tf_target.dot(tfobjM)
+                if tfobj.child_frame_id == frame_end:
+                    break
+                else:
+                    frame_start = tfobj.child_frame_id
+
+        pos = tf_target[:3, 3]
+        rot = Rotation.from_matrix(tf_target[:3, :3]).as_euler('xyz')
         end_effector_pose = np.concatenate([pos, rot])
         tf_list.append(end_effector_pose)
+        print(end_effector_pose)
+
+    # ax = tm.plot_frames_in('link_base', s=0.1)
+    # ax.set_xlim((-0.5, 0.5))
+    # ax.set_ylim((-0.5, 0.5))
+    # ax.set_zlim((-0.5, 0.5))
+    # plt.savefig('tf.png')
 
     return tf_list
 
