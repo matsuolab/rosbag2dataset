@@ -11,8 +11,8 @@ else
     DATASET_DIR=$2
 fi
 
-docker run -it --rm \
-    --privileged \
+docker run --rm -it --network host --privileged --gpus all -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v ${PWD}/:/root/rosbag2dataset \
     -v ${BAGFILE_DIR}:/root/bagfiles \
     -v ${DATASET_DIR}:/root/dataset \

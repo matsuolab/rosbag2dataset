@@ -1,0 +1,14 @@
+{
+    "topics": {
+        "TOPIC_NAME_HERE": "DATASET_NAME_HERE"
+    },
+    "hz": 10,
+    "output_dir": "/root/dataset",
+    "bagfile_dir": "/root/bagfiles",
+    "bagfile_names": [],
+    "width": 224,
+    "height": 224,
+    "action_noise": 0.1,
+    "lower_bound": [0.0, -1.5],
+    "upper_bound": [1.5, 1.5]
+} 
