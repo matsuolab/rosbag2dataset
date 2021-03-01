@@ -203,6 +203,12 @@ def convert_tf(data):
     # ax.set_zlim((-0.5, 0.5))
     # plt.savefig('tf.png')
 
+    ax = tm.plot_frames_in('link_base', s=0.1)
+    ax.set_xlim((-0.5, 0.5))
+    ax.set_ylim((-0.5, 0.5))
+    ax.set_zlim((-0.5, 0.5))
+    plt.savefig('tf.png')
+
     return tf_list
 
 
