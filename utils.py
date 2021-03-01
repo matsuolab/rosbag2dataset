@@ -162,10 +162,10 @@ def convert_JointTrajectory(data):
 
 def convert_tf(data):
     tf_list = []
+    tm = TransformManager()
     for msg in tqdm(data):
-        tm = TransformManager()
-        tf_link = pt.transform_from_pq([0, 0, 0, 0, 0, 0, 0])
-        tm.add_transform('link0', 'robot', tf_link)
+        # tf_link = pt.transform_from_pq([0, 0, 0, 0, 0, 0, 1])
+        # tm.add_transform('link0', 'robot', tf_link)
 
         for tf in msg.transforms:
             for i in range(1, 8):
@@ -174,16 +174,24 @@ def convert_tf(data):
                     quat = tf.transform.rotation
                     tf_link = pt.transform_from_pq(
                         [trans.x, trans.y, trans.z, quat.x, quat.y, quat.z, quat.w])
-                    tm.add_transform('link{}'.format(i),
-                                     'link{}'.format(i-1), tf_link)
+                    # tm.add_transform('link{}'.format(i),
+                    #                  'link{}'.format(i-1), tf_link)
+                    tm.add_transform(tf.child_frame_id,
+                                     tf.header.frame_id, tf_link)
 
-        end_effector_matrix = tm.get_transform('link7', 'link0')
+        end_effector_matrix = tm.get_transform('link_base', 'link7')
         pos = end_effector_matrix[:3, 3]
         end_effector_rotation_matrix = end_effector_matrix[:3, :3]
         rot = Rotation.from_matrix(
             end_effector_rotation_matrix).as_euler('xyz')
         end_effector_pose = np.concatenate([pos, rot])
         tf_list.append(end_effector_pose)
+
+    ax = tm.plot_frames_in('link_base', s=0.1)
+    ax.set_xlim((-0.5, 0.5))
+    ax.set_ylim((-0.5, 0.5))
+    ax.set_zlim((-0.5, 0.5))
+    plt.savefig('tf.png')
 
     return tf_list
 
