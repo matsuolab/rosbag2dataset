@@ -7,11 +7,11 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./:/root/rosbag2dataset
-      # - ~/dataset/bottle_grasp1:/root/bagfiles
-      # - ~/dataset/bottle_grasp1/converted:/root/dataset
+      - ~/dataset/bottle_grasp_2ext:/root/bagfiles
+      - ~/dataset/bottle_grasp_2ext/converted:/root/dataset
 
       # test
-      - ./testbagfiles:/root/bagfiles
-      - ./testdataset:/root/dataset
+      # - ./testbagfiles:/root/bagfiles
+      # - ./testdataset:/root/dataset
     stdin_open: true
     privileged: true
