@@ -5,6 +5,7 @@ import os
 import argparse
 import json
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 import torch
 
@@ -62,7 +63,7 @@ if __name__ == '__main__':
                     sample_data[topic], config["height"], config["width"])
                 tensor = torch.tensor(
                     data, dtype=torch.float32).permute(
-                    0, 3, 1, 2)
+                    0, 1, 2, 3)
             elif topic_type == "sensor_msgs/Image":
                 print("==== convert image ====")
                 data = convert_Image(
@@ -71,7 +72,7 @@ if __name__ == '__main__':
                     config["width"])
                 tensor = torch.tensor(
                     data, dtype=torch.uint8).permute(
-                    0, 3, 1, 2)
+                    0, 1, 2, 3)
             elif topic_type == "geometry_msgs/PoseStamped":
                 print("==== convert PoseStamped ====")
                 data = convert_PoseStamped(sample_data[topic])
