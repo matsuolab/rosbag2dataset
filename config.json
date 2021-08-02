@@ -2,6 +2,7 @@
     "topics": {
         "eye_to_hand_camera/color/image_raw": "camera_color",
         "eye_on_hand_camera/color/image_raw": "handcamera_color",
+        "eye_to_hand2_camera/color/image_raw": "camera2_color",
         "controller/pose": "controller_pose",
         "controller/trigger": "controller_trigger",
         "teleop/pose_goal": "pose_goal",
