@@ -56,6 +56,8 @@ class RosbagHandler:
 
         for topic, msg, time in self.bag.read_messages(
                 topics=topic_names, start_time=start_time, end_time=end_time):
+            if topic == '/tf' and len(msg.transforms) == 1:
+                continue
 
             if hz is not None:
                 data[topic[1:]].append([time.to_nsec() / 1e9, msg])
