@@ -2,9 +2,11 @@
 import os
 import argparse
 import json
+import glob
 from tqdm import tqdm
 
 import torch
+import pickle
 
 from rosbaghandler import RosbagHandler
 from utils import *
@@ -20,80 +22,67 @@ if __name__ == '__main__':
     else:
         raise ValueError("cannot find config file")
 
-    bagfile = os.path.join(config["bagfile_dir"], config["bagfile_name"]) 
-    if not os.path.exists(bagfile):
+    bagfile_path = os.path.join(config["bagfile_dir"], config["bagfile_name"]) 
+    bagfiles = glob.glob(bagfile_path)
+    print(bagfiles)
+    if len(bagfiles) == 0:
         raise ValueError('set bagfile')
-    file_name = os.path.splitext(os.path.basename(bagfile))[0]+"_traj"+str(config["traj_steps"])
+    file_name = "test_traj"+str(config["traj_steps"])
     out_dir = os.path.join(config["output_dir"], file_name)
     print("out_dir: ", out_dir)
     os.makedirs(out_dir, exist_ok=True)
-    for data_name in config["dataset"]:
-        os.makedirs(os.path.join(out_dir, data_name), exist_ok=True)
-    rosbag_handler = RosbagHandler(bagfile)
 
-    t0 = rosbag_handler.start_time
-    t1 = rosbag_handler.end_time
-    sample_data = rosbag_handler.read_messages(topics=config["topics"], start_time=t0, end_time=t1, hz=config["hz"])
-    dataset = {}
-    for topic in sample_data.keys():
-        topic_type = rosbag_handler.get_topic_type(topic)
-        if topic_type == "sensor_msgs/CompressedImage":
-            print("==== convert compressed image ====")
-            dataset["obs"] = convert_CompressedImage(sample_data[topic], config["height"], config["width"])
-        elif topic_type == "":
-            print("==== convert image ====")
-            dataset["obs"] = convert_Image(sample_data[topic], config["height"], config["width"])
-        elif topic_type == "nav_msgs/Odometry":
-            print("==== convert odometry ====")
-            dataset['acs'], dataset['pos'] = \
-                convert_Odometry(sample_data[topic], config['action_noise'],
-                                    config['lower_bound'], config["upper_bound"])
-        elif topic_type == "geometry_msgs/Twist":
-            print("==== convert twist ====")
-            dataset['acs'] = convert_Twist(sample_data[topic], config['action_noise'], config['lower_bound'], config["upper_bound"])
-        elif topic_type == "sensor_msgs/LaserScan":
-            print("==== convert laser scan ====")
-            dataset["lidar"] = convert_LaserScan(sample_data[topic])
-        elif topic_type == "sensor_msgs/Imu":
-            print("==== convert imu ====")
-            dataset["imu"] = convert_Imu(sample_data[topic])
+    torch_datasets = []
+    file_name = ("test.pkl")
+    torch_path = os.path.join(out_dir, file_name)
+    for bagfile in bagfiles:
+        rosbag_handler = RosbagHandler(bagfile)
 
-    print("==== save data as torch tensor ====")
-    if "goal" in config["dataset"]:
-        num_steps = len(dataset["acs"]) - config["goal_steps"]
-    else:
-        num_steps = len(dataset["acs"])
-    num_traj = int(num_steps/config["traj_steps"])
-    for idx in tqdm(range(num_traj)):
-        file_name = ("%d.pt" % (idx))
-        t0 = idx*config["traj_steps"]
-        t1 = t0+config["traj_steps"]
-        for data_name in config["dataset"]:
-            path = os.path.join(out_dir, data_name, file_name)
-            if data_name == "pos":
-                traj_pos = dataset["pos"][t0:t1]
-                poses = []
-                init_pose = traj_pos[0].copy()
-                for idx, pose in tqdm(enumerate(traj_pos)):
-                    trans_pose = transform_pose(pose, init_pose)
-                    poses.append(trans_pose)
-                data = torch.tensor(poses, dtype=torch.float32)
-            elif data_name == "goal":
-                traj_pos = dataset["pos"][t0:t1+config["goal_steps"]]
-                goals = []
-                for idx, pose in tqdm(enumerate(traj_pos)):
-                    if idx+config["goal_steps"]<len(traj_pos):
-                        goal = transform_pose(traj_pos[idx+config["goal_steps"]], pose)
-                        goals.append(goal)
-                data = torch.tensor(goals, dtype=torch.float32)
-            else:
-                traj_data = dataset[data_name][t0:t1]
-                data = torch.tensor(traj_data, dtype=torch.float32)
-            with open(path, "wb") as f:
-                torch.save(data, f)
-    
-    with open(os.path.join(out_dir, 'info.txt'), 'w') as f:
-        info = config
-        info['num_steps'] = num_steps
-        info['num_traj'] = num_traj
-        json.dump(config, f)
+        t0 = rosbag_handler.start_time
+        t1 = rosbag_handler.end_time
+        sample_data = rosbag_handler.read_messages(topics=config["topics"], start_time=t0, end_time=t1, hz=config["hz"])
+        dataset = {}
+        for topic in sample_data.keys():
+            topic_type = rosbag_handler.get_topic_type(topic)
+            if topic_type == "sensor_msgs/Image":
+                print("==== convert image ====")
+                dataset["images"] = convert_Image(sample_data[topic], config["height"], config["width"])
+            elif topic_type == "geometry_msgs/PoseStamped":
+                print("==== convert PoseStamped ====")
+                dataset["pose"] = convert_PoseStamped(sample_data[topic])
+            elif topic_type == "std_msgs/Float32":
+                print("==== convert Float32 ====")
+                dataset["gripper"] = [msg.data for msg in sample_data[topic]]
+
+        print("==== save data as torch tensor ====")
+        if "goal" in config["dataset"]:
+            num_steps = len(dataset["gripper"]) - config["goal_steps"]
+        else:
+            num_steps = len(dataset["gripper"])
+        
+        num_traj = int(num_steps/config["traj_steps"])
+        if num_traj == 0:
+            num_traj = 1
+            config["traj_steps"] = num_steps 
+        for idx in tqdm(range(num_traj)):
+            torch_dataset = {}
+            t0 = idx*config["traj_steps"]
+            t1 = t0+config["traj_steps"]
+            for data_name in config["dataset"]:
+
+                if data_name == "gripper":
+                    traj_data = dataset[data_name][t0:t1]
+                    torch_dataset["actions"] = torch.cat((torch_dataset["pose"], torch.tensor(traj_data, dtype=torch.float32).unsqueeze(-1)), 1)
+                else:
+                    traj_data = dataset[data_name][t0:t1]
+                    torch_dataset[data_name] = torch.tensor(traj_data, dtype=torch.float32)
+            torch_datasets.append(torch_dataset)
+
+    with open(torch_path, "wb") as f:
+        pickle.dump(torch_datasets, f)
+
+        with open(os.path.join(out_dir, 'info.txt'), 'w') as f:
+            info = config
+            info['num_steps'] = num_steps
+            info['num_traj'] = num_traj
+            json.dump(config, f)

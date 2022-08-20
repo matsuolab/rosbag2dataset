@@ -98,3 +98,19 @@ def get_pose_from_odom(odom):
 def add_random_noise(action, std, lb, ub):
     action += np.random.randn(*action.shape) * std
     return action.clip(lb, ub)
+
+def convert_PoseStamped(data):
+    pose_list = []
+    for msg in tqdm(data):
+        quaternion = msg.pose.orientation
+        euler = quaternion_to_euler(quaternion)
+
+        pose_list.append(np.array([
+            msg.pose.position.x,
+            msg.pose.position.y,
+            msg.pose.position.z,
+            euler.x,
+            euler.y,
+            euler.z,
+        ]))
+    return pose_list
