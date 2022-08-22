@@ -21,19 +21,21 @@ if __name__ == '__main__':
             config = json.load(f)
     else:
         raise ValueError("cannot find config file")
-
+    
+    os.chdir('../')
     bagfile_path = os.path.join(config["bagfile_dir"], config["bagfile_name"]) 
     bagfiles = glob.glob(bagfile_path)
     print(bagfiles)
     if len(bagfiles) == 0:
         raise ValueError('set bagfile')
-    file_name = "test_traj"+str(config["traj_steps"])
-    out_dir = os.path.join(config["output_dir"], file_name)
+    # file_name = "test_traj"+str(config["traj_steps"])
+    # out_dir = os.path.join(config["output_dir"], file_name)
+    out_dir = config["output_dir"]
     print("out_dir: ", out_dir)
     os.makedirs(out_dir, exist_ok=True)
 
     torch_datasets = []
-    file_name = ("test.pkl")
+    file_name = ("test_1.pkl")
     torch_path = os.path.join(out_dir, file_name)
     for bagfile in bagfiles:
         rosbag_handler = RosbagHandler(bagfile)
@@ -53,6 +55,8 @@ if __name__ == '__main__':
             elif topic_type == "std_msgs/Float32":
                 print("==== convert Float32 ====")
                 dataset["gripper"] = [msg.data for msg in sample_data[topic]]
+            elif topic_type == "xarm_msgs/RobotMsg":
+                dataset["observations"] = convert_EndEffectorPose(sample_data[topic])
 
         print("==== save data as torch tensor ====")
         if "goal" in config["dataset"]:

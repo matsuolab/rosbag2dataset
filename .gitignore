@@ -1,3 +1,5 @@
 __pycache__
-dataset/
-bagfiles
+dataset_/
+bagfiles_/
+*.jpg
+*.png

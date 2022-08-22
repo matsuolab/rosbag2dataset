@@ -3,16 +3,30 @@ import cv2
 from tqdm import tqdm
 from geometry_msgs.msg import Vector3
 import tf
+from tf.transformations import *
+from scipy.spatial.transform import Rotation
 from cv_bridge import CvBridge, CvBridgeError
+import os
+import yaml
+
+import rospy
+import rospkg
+
+import tf2_ros
+import geometry_msgs.msg
+from std_srvs.srv import Empty, EmptyResponse
+from pytransform3d.transform_manager import TransformManager
+import matplotlib.pyplot as plt
 
 def convert_Image(data, height=None, width=None):
     obs = []
     bridge = CvBridge()
     for msg in tqdm(data):
-        try:
+        """ try:
             img = bridge.imgmsg_to_cv2(msg,"bgr8")
         except CvBridgeError as e:
-            print(e)
+            print(e) """
+        img = np.frombuffer(msg.data, dtype=np.uint8).reshape(msg.height, msg.width, -1)
         if height is not None and width is not None:
             h,w,c = img.shape
             img = img[0:h, int((w-h)*0.5):w-int((w-h)*0.5), :]
@@ -114,3 +128,105 @@ def convert_PoseStamped(data):
             euler.z,
         ]))
     return pose_list
+
+class GetEndeffPos:
+    def __init__(self):
+        # Is node_name 'saving_calibration_result' overlap a problem or not?
+        rospy.init_node("get_endeff_pos")
+        
+
+        # parent frame
+        self.parent_frame_id = "world"
+        
+        # child frame
+        self.child_frame_id = "link7"
+
+        # tf buffer and listener
+        self.tfBuffer = tf2_ros.Buffer()
+        self.listener = tf2_ros.TransformListener(self.tfBuffer)
+
+        while not rospy.is_shutdown():
+            try:
+                trans = self.tfBuffer.lookup_transform(self.parent_frame_id, self.child_frame_id, rospy.Time())
+                print(trans.transform.translation)
+            except (tf2_ros.LookupException,
+                tf2_ros.ConnectivityException,
+                tf2_ros.ExtrapolationException) as e:
+                rospy.logerr(e)
+        return EmptyResponse()
+
+def transform2homogeneousM(tfobj):
+    # geometry_msg.msg.Transform to Homogeneous Matrix
+    tfeul = tf.transformations.euler_from_quaternion(
+        [tfobj.rotation.x, tfobj.rotation.y, tfobj.rotation.z, tfobj.rotation.w], axes='sxyz')
+    tftrans = [tfobj.translation.x, tfobj.translation.y, tfobj.translation.z]
+    tfobjM = tf.transformations.compose_matrix(angles=tfeul, translate=tftrans)
+    return tfobjM
+
+def convert_tf(data):
+    tf_list = []
+    for msg in tqdm(data):
+        print(msg)
+        # Initialize Homogeneous Matrix
+        tfobj = geometry_msgs.msg.Transform()
+        tf_target = transform2homogeneousM(tfobj)
+        # define frame start & end
+        frame_start = "world"
+        frame_end = "link7"
+
+        for tfobj in msg.transforms:
+            if tfobj.header.frame_id == frame_start:
+                tfobjM = transform2homogeneousM(tfobj.transform)
+                tf_target = tf_target.dot(tfobjM)
+                if tfobj.child_frame_id == frame_end:
+                    break
+                else:
+                    frame_start = tfobj.child_frame_id
+        print(tf_target)
+        pos = tf_target[:3, 3]
+        # print(pos)
+        rot = Rotation.from_matrix(tf_target[:3, :3]).as_euler('xyz')
+        end_effector_pose = np.concatenate([pos, rot])
+        tf_list.append(end_effector_pose)
+        # print(end_effector_pose)
+
+    tf_list = np.array(tf_list)
+    fig = plt.figure(figsize = (8, 8))
+
+    ax = fig.add_subplot(111)
+
+    ax.set_title("", size = 20)
+
+    ax.set_xlabel("x", size = 14, color = "r")
+    ax.set_ylabel("y", size = 14, color = "r")
+
+    ax.scatter(tf_list[:, 0], tf_list[:, 1], s = 40, c = "blue")
+    
+    os.chdir('rosbag2dataset')
+    plt.savefig('tf_xy.png')
+    plt.close()
+
+    fig = plt.figure(figsize = (8, 8))
+
+    ax = fig.add_subplot(111)
+
+    ax.set_title("", size = 20)
+
+    ax.set_xlabel("y", size = 14, color = "r")
+    ax.set_ylabel("z", size = 14, color = "r")
+
+    ax.scatter(tf_list[:, 1], tf_list[:, 2], s = 40, c = "blue")
+    
+    plt.savefig('tf_yz.png')
+    plt.close()
+
+    return tf_list
+
+def convert_EndEffectorPose(data):
+    end_effector_pose_list = []
+    for msg in tqdm(data):
+        print(msg)
+        end_effector_pose_list.append([msg.pose[0] * 0.001, msg.pose[1] * 0.001, msg.pose[2] * 0.001])
+
+    return np.array(end_effector_pose_list)
+    

@@ -2,7 +2,8 @@
     "topics": [
         "camera/color/image_raw",
         "controller/pose",
-        "controller/trigger"
+        "controller/trigger",
+        "xarm/xarm_states"      
     ],
     "dataset": [
         "images",
