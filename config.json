@@ -8,9 +8,10 @@
     "dataset": [
         "images",
         "pose",
-        "gripper"
+        "gripper",
+	"robot_state"
     ],
-    "hz": 10,
+    "hz": 5,
     "traj_steps": 10000,
     "goal_steps": 500,
     "output_dir": "./dataset",
