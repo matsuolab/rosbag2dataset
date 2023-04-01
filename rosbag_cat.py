@@ -13,7 +13,7 @@ from utils import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default="config.json")
+    parser.add_argument('--config', type=str, default="config_hsr.json")
     args = parser.parse_args()
 
     if os.path.exists(args.config):
@@ -21,9 +21,9 @@ if __name__ == '__main__':
             config = json.load(f)
     else:
         raise ValueError("cannot find config file")
-    
-    os.chdir('../')
-    bagfile_path = os.path.join(config["bagfile_dir"], config["bagfile_name"]) 
+
+    # os.chdir('../')
+    bagfile_path = os.path.join(config["bagfile_dir"], config["bagfile_name"])
     bagfiles = glob.glob(bagfile_path)
     print(bagfiles)
     if len(bagfiles) == 0:
@@ -49,4 +49,3 @@ if __name__ == '__main__':
                 print("==== convert tf ====")
                 data = convert_tf(sample_data[topic])
                 print(data.shape)
-        

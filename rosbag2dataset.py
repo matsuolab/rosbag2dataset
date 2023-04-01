@@ -13,7 +13,7 @@ from utils import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default="config.json")
+    parser.add_argument('--config', type=str, default="config_hsr.json")
     args = parser.parse_args()
 
     if os.path.exists(args.config):
@@ -21,9 +21,10 @@ if __name__ == '__main__':
             config = json.load(f)
     else:
         raise ValueError("cannot find config file")
-    
-    os.chdir('../')
-    bagfile_path = os.path.join(config["bagfile_dir"], config["bagfile_name"]) 
+
+    # os.chdir('../')
+    bagfile_path = os.path.join(config["bagfile_dir"], config["bagfile_name"])
+    print(bagfile_path)
     bagfiles = glob.glob(bagfile_path)
     print(bagfiles)
     if len(bagfiles) == 0:
@@ -37,7 +38,7 @@ if __name__ == '__main__':
     torch_datasets = []
     file_name = ("test_1.pkl")
     torch_path = os.path.join(out_dir, file_name)
-    for bagfile in bagfiles:
+    for bagfile in [bagfiles[1]]:
         rosbag_handler = RosbagHandler(bagfile)
 
         t0 = rosbag_handler.start_time
@@ -46,16 +47,19 @@ if __name__ == '__main__':
         dataset = {}
         for topic in sample_data.keys():
             topic_type = rosbag_handler.get_topic_type(topic)
-            if topic_type == "sensor_msgs/Image":
+            if topic_type == "sensor_msgs/Image" and topic == "/hsrb/head_rgbd_sensor/rgb/image_rect_color":
                 print("==== convert image ====")
-                dataset["images"] = convert_Image(sample_data[topic], config["height"], config["width"])
+                dataset["head_images"] = convert_Image(sample_data[topic], config["height"], config["width"])
+            elif topic_type == "sensor_msgs/Image" and topic == "hsrb/hand_camera/image_raw":
+                print("==== convert image ====")
+                dataset["hand_images"] = convert_Image(sample_data[topic], config["height"], config["width"])
             elif topic_type == "geometry_msgs/PoseStamped":
                 print("==== convert PoseStamped ====")
                 dataset["pose"] = convert_PoseStamped(sample_data[topic])
             elif topic_type == "std_msgs/Float32":
                 print("==== convert Float32 ====")
                 dataset["gripper"] = [msg.data for msg in sample_data[topic]]
-            elif topic_type == "xarm_msgs/RobotMsg":
+            elif topic_type == "sensor_msgs/JointState":
                 dataset["observations"] = convert_EndEffectorPose(sample_data[topic])
 
         print("==== save data as torch tensor ====")
@@ -63,11 +67,11 @@ if __name__ == '__main__':
             num_steps = len(dataset["gripper"]) - config["goal_steps"]
         else:
             num_steps = len(dataset["gripper"])
-        
+
         num_traj = int(num_steps/config["traj_steps"])
         if num_traj == 0:
             num_traj = 1
-            config["traj_steps"] = num_steps 
+            config["traj_steps"] = num_steps
         for idx in tqdm(range(num_traj)):
             torch_dataset = {}
             t0 = idx*config["traj_steps"]
