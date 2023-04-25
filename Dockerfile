@@ -17,7 +17,9 @@ RUN pip3 install --upgrade pip && \
     pip3 install --no-cache-dir \
         torch \
         opencv-python \
-        tqdm
+        tqdm \
+        scipy \
+        pytransform3d
 
 WORKDIR /root
 CMD ["/bin/bash"]

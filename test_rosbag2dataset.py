@@ -23,19 +23,19 @@ if __name__ == '__main__':
         raise ValueError("cannot find config file")
 
     # os.chdir('../')
-    bagfile_path = os.path.join(config["bagfile_dir"], config["output_file_name"], config["bagfile_name"])
+    bagfile_path = os.path.join(config["bagfile_dir"], config["bagfile_name"])
     print(bagfile_path)
     bagfiles = glob.glob(bagfile_path)
     if len(bagfiles) == 0:
         raise ValueError('set bagfile')
     # file_name = "test_traj"+str(config["traj_steps"])
     # out_dir = os.path.join(config["output_dir"], file_name)
-    out_dir = os.path.join(config["output_dir"], config["output_file_name"])
+    out_dir = config["output_dir"]
     print("out_dir: ", out_dir)
     os.makedirs(out_dir, exist_ok=True)
 
     torch_datasets = []
-    file_name = (f"{config['output_file_name']}.pkl")
+    file_name = ("test_1.pkl")
     torch_path = os.path.join(out_dir, file_name)
     for bagfile in bagfiles:
         rosbag_handler = RosbagHandler(bagfile)
@@ -49,22 +49,18 @@ if __name__ == '__main__':
             print(topic)
             if topic_type == "sensor_msgs/Image" and topic == "hsrb/head_rgbd_sensor/rgb/image_raw":
                 print("==== convert head image ====")
-                dataset["head_images"] = convert_Image(sample_data[topic], config["height"], config["width"])
+                dataset["head_images"] = convert_Image([sample_data[topic][0]], config["height"], config["width"])
             elif topic_type == "sensor_msgs/Image" and topic == "hsrb/hand_camera/image_raw":
                 print("==== convert hand image ====")
-                dataset["hand_images"] = convert_Image(sample_data[topic], config["height"], config["width"])
+                dataset["hand_images"] = convert_Image([sample_data[topic][0]], config["height"], config["width"])
             elif topic_type == "geometry_msgs/PoseStamped":
                 print("==== convert PoseStamped ====")
-                dataset["arm_pose"] = convert_PoseStamped(sample_data[topic])
+                dataset["pose"] = convert_PoseStamped([sample_data[topic][0]])
             elif topic_type == "std_msgs/Float32":
                 print("==== convert Float32 ====")
-                dataset["arm_action"] = [msg.data for msg in sample_data[topic]]
-            elif topic_type == "geometry_msgs/Twist":
-                print("==== convert Twist ====")
-                dataset["base_cmd"] = convert_Twist(sample_data[topic])
+                dataset["gripper"] = [msg.data for msg in [sample_data[topic][0]]]
             elif topic_type == "sensor_msgs/JointState":
-                print("==== convert JointState ====")
-                dataset["joint_states"] = convert_JointStates(sample_data[topic])
+                dataset["observations"] = convert_JointStates([sample_data[topic][0]])
                 # dataset["observations_all"] = convert_JointStates(sample_data[topic])
 
         print("==== save data as torch tensor ====")

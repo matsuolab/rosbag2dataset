@@ -61,9 +61,8 @@ class RosbagHandler:
         end_time = np.inf
         idx = {}
         for topic in data.keys():
-            print(f'data topic: {data[topic]}')
+            # print(f'data topic: {data[topic]}')
             if len(data[topic]) == 0:
-                print(topic)
                 continue
             start_time = max(start_time, data[topic][0][0])
             end_time = min(end_time, data[topic][-1][0])
@@ -71,13 +70,9 @@ class RosbagHandler:
             idx[topic] = 1
         t = start_time
         while(t<end_time):
-            print(f"end time: {end_time}")
-            print(f"data time: {data[topic][-1][0]}")
-            print(t)
             for topic in data.keys():
                 cnt = 0
                 if len(data[topic]) == 0:
-                    print(topic)
                     continue
                 while(data[topic][idx[topic]][0]<t):
                     cnt+=1

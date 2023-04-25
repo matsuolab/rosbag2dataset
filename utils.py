@@ -59,12 +59,12 @@ def convert_Odometry(data, action_noise, lower_bound, upper_bound):
         pos.append(pose)
     return acs, pos
 
-def convert_Twist(data, action_noise, lower_bound, upper_bound):
+def convert_Twist(data, action_noise=0.1, lower_bound=[0.0, -1.5], upper_bound=[1.5, 1.5]):
     acs = []
     for msg in tqdm(data):
         # action
         vel = np.array([msg.linear.x, msg.angular.z])
-        vel = add_random_noise(vel, action_noise, lower_bound, upper_bound)
+        # vel = add_random_noise(vel, action_noise, lower_bound, upper_bound)
         acs.append(vel)
     return acs
 
@@ -225,8 +225,17 @@ def convert_tf(data):
 def convert_EndEffectorPose(data):
     end_effector_pose_list = []
     for msg in tqdm(data):
-        print(msg)
+        # print(msg)
         end_effector_pose_list.append([msg.pose[0] * 0.001, msg.pose[1] * 0.001, msg.pose[2] * 0.001])
 
     return np.array(end_effector_pose_list)
+
+def convert_JointStates(data, all=False):
+    joint_states_list = []
+    tmp_data = data[0]
+    joint_names = tmp_data.name
+    for msg in tqdm(data):
+        joint_states_list.append([msg.position, msg.velocity, msg.effort])
+
+    return np.array(joint_states_list)
     
