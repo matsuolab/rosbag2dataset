@@ -19,6 +19,7 @@ RUN pip3 install --upgrade pip && \
         opencv-python \
         tqdm \
         scipy \
+        matplotlib \
         pytransform3d
 
 WORKDIR /root

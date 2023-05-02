@@ -2,7 +2,7 @@
     "topics": [
         "hsrb/head_rgbd_sensor/rgb/image_raw",
         "hsrb/hand_camera/image_raw",
-        "hsrb/joint_states",
+        "hsrb/robot_state/joint_states",
         "mss/m2s/base_pub",
         "controller/pose_c2",
         "controller/trigger_c2"
@@ -18,7 +18,7 @@
     "hz": 5,
     "traj_steps": 10000,
     "goal_steps": 500,
-    "output_file_name": "sim_arm",
+    "output_file_name": "run_and_grasp",
     "output_dir": "./dataset",
     "bagfile_dir": "./teleop",
     "bagfile_name": "*.bag",

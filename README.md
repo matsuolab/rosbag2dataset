@@ -18,6 +18,6 @@ python3 rosbag2dataset.py
 
 ## Debag rosbag
 ```
-pip install scipy pytransform3d
+pip install scipy matplotlib pytransform3d
 python3 rosbag_cat.py
 ```
